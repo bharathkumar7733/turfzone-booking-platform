@@ -1,0 +1,54 @@
+Build a full responsive web application using HTML, CSS, and JavaScript. The app is called “TurfZone” and is inspired by the BookMyShow interface. It allows users to register once and then book sports slots (like cricket, football, badminton, etc.) with ease.
+
+🎯 Core Features:
+
+1. **Landing Page (Home)**:
+- App Name: “TurfZone”
+- Clean header with navigation: Home | Book a Slot | My Bookings | Register | Login
+- Hero section: Background image of turf/cricket stadium, "Book Your Turf Now" CTA
+- Scrollable sports icons (like BookMyShow genres): Cricket, Football, Badminton, Pickleball, Snooker
+- On selecting a sport, navigate to turf list page
+
+2. **Player Registration Page**:
+- Form with fields:
+  - Name
+  - Age
+  - Gender
+  - Email
+  - Mobile Number
+  - Password
+- Submit button, validate inputs
+- On success, save player details using localStorage or simulate backend (for now)
+- Registered players don’t need to re-enter details during booking
+
+3. **Login Page**:
+- Basic login form with email and password
+- If matched, redirect to Book Slot page
+
+4. **Turf Selection Page (Like BookMyShow Theater List)**:
+- Based on selected sport, show cards of turfs (e.g., for Cricket, show Cricket turfs only)
+- Each card has:
+  - Turf image
+  - Name & address
+  - Rating
+  - “View Slots” button
+
+5. **Slot Booking Page (2-Hour Slot Blocks)**:
+- When a turf is selected, show available 2-hour slots: (e.g., 6–8AM, 8–10AM...)
+- Player selects desired slot → redirect to confirmation page
+- Pre-filled user data from registration
+- Confirm & Book button
+
+6. **My Bookings Page**:
+- Show list of all booked turfs for that user
+- Display: Turf name, sport, date, 2-hour time slot, status (confirmed/cancelled)
+- Cancel booking button (for UI, optional logic)
+
+🛠 Additional Notes:
+- Use a modern, mobile-friendly design inspired by BookMyShow
+- Dropdown or tab interface for selecting sports
+- Turf slots should only show available times (simulate with dummy data)
+- Smooth transitions between pages, use hover effects and minimal animations
+- Stick to clean UI with good spacing and card layouts
+
+Use localStorage to simulate user sessions and bookings for now.
