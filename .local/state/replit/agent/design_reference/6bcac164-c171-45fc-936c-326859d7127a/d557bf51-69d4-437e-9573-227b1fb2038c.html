@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TurfZone - Book Your Sports Arena</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'neon-orange': '#FF6600',
+                        'neon-blue': '#00D4FF',
+                        'neon-pink': '#FF0080',
+                        'dark-bg': '#0A0A0A',
+                        'card-dark': '#1A1A1A'
+                    },
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif']
+                    },
+                    animation: {
+                        'glow': 'glow 2s ease-in-out infinite alternate',
+                        'float': 'float 6s ease-in-out infinite',
+                        'slideIn': 'slideIn 0.5s ease-out'
+                    }
+                }
+            }
+        };
+    </script>
+    <style>
+        @keyframes glow {
+            from { box-shadow: 0 0 20px #FF6600; }
+            to { box-shadow: 0 0 30px #FF6600, 0 0 40px #FF6600; }
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .neon-border {
+            border: 2px solid #FF6600;
+            box-shadow: 0 0 20px rgba(255, 102, 0, 0.5);
+        }
+        .neon-text {
+            text-shadow: 0 0 10px #FF6600;
+        }
+        .glass-effect {
+            background: rgba(26, 26, 26, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 102, 0, 0.3);
+        }
+        #cricket-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            z-index: 1;
+        }
+    </style>
+</head>
+<body class="bg-dark-bg text-white font-inter overflow-x-hidden">
+    <!-- Cricket Stadium Background -->
+    <!-- Panoramic view of a cricket stadium at night with floodlights -->
+    <div class="fixed inset-0 w-full h-full">
+        <img src="https://images.unsplash.com/photo-1578662996442-48f60103fc96?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&h=1080" 
+             alt="Cricket stadium at night with floodlights" 
+             class="w-full h-full object-cover opacity-30">
+        <div class="absolute inset-0 bg-gradient-to-b from-dark-bg/60 via-dark-bg/80 to-dark-bg"></div>
+    </div>
+
+    <!-- 3D Cricket Animation Canvas -->
+    <canvas id="cricket-canvas" class="fixed inset-0 w-full h-full"></canvas>
+
+    <!-- Navigation Header -->
+    <nav class="relative z-20 bg-black/80 backdrop-blur-md border-b border-neon-orange/30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <h1 class="text-2xl font-bold neon-text cursor-pointer" onclick="showPage('home')">TurfZone</h1>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="#" onclick="showPage('home')" class="nav-link text-white hover:text-neon-orange px-3 py-2 rounded-md text-sm font-medium transition-colors">Home</a>
+                        <a href="#" onclick="showPage('booking')" class="nav-link text-white hover:text-neon-orange px-3 py-2 rounded-md text-sm font-medium transition-colors">Book a Slot</a>
+                        <a href="#" onclick="showPage('my-bookings')" class="nav-link text-white hover:text-neon-orange px-3 py-2 rounded-md text-sm font-medium transition-colors">My Bookings</a>
+                        <a href="#" onclick="showPage('register')" class="nav-link text-white hover:text-neon-orange px-3 py-2 rounded-md text-sm font-medium transition-colors">Register</a>
+                        <a href="#" onclick="showPage('login')" class="nav-link text-white hover:text-neon-orange px-3 py-2 rounded-md text-sm font-medium transition-colors">Login</a>
+                    </div>
+                </div>
+                <div class="md:hidden">
+                    <button onclick="toggleMobileMenu()" class="text-white hover:text-neon-orange">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- Mobile menu -->
+        <div id="mobile-menu" class="hidden md:hidden bg-black/90 backdrop-blur-md">
+            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                <a href="#" onclick="showPage('home')" class="block text-white hover:text-neon-orange px-3 py-2 rounded-md text-base font-medium">Home</a>
+                <a href="#" onclick="showPage('booking')" class="block text-white hover:text-neon-orange px-3 py-2 rounded-md text-base font-medium">Book a Slot</a>
+                <a href="#" onclick="showPage('my-bookings')" class="block text-white hover:text-neon-orange px-3 py-2 rounded-md text-base font-medium">My Bookings</a>
+                <a href="#" onclick="showPage('register')" class="block text-white hover:text-neon-orange px-3 py-2 rounded-md text-base font-medium">Register</a>
+                <a href="#" onclick="showPage('login')" class="block text-white hover:text-neon-orange px-3 py-2 rounded-md text-base font-medium">Login</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Container -->
+    <main class="relative z-10 min-h-screen">
+        <!-- HOME PAGE -->
+        <div id="home-page" class="page">
+            <!-- Hero Section -->
+            <section class="relative h-screen flex items-center justify-center text-center">
+                <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <h1 class="text-5xl md:text-7xl font-bold mb-6 neon-text animate-float">
+                        Book Your Turf Now
+                    </h1>
+                    <p class="text-xl md:text-2xl text-gray-300 mb-8 max-w-2xl mx-auto">
+                        Experience the thrill of sports with premium turf bookings across the city
+                    </p>
+                    <button onclick="showPage('sports')" class="bg-neon-orange hover:bg-orange-600 text-black font-bold py-4 px-8 rounded-lg text-lg transition-all duration-300 animate-glow">
+                        Explore Sports
+                    </button>
+                </div>
+            </section>
+
+            <!-- Sports Selection Section -->
+            <section class="py-20 bg-black/40">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <h2 class="text-4xl font-bold text-center mb-12 neon-text">Choose Your Sport</h2>
+                    <div class="grid grid-cols-2 md:grid-cols-5 gap-6">
+                        <div onclick="selectSport('cricket')" class="sport-card glass-effect p-6 rounded-xl text-center cursor-pointer hover:scale-105 transition-all duration-300 neon-border">
+                            <div class="text-6xl mb-4">🏏</div>
+                            <h3 class="text-lg font-semibold">Cricket</h3>
+                        </div>
+                        <div onclick="selectSport('football')" class="sport-card glass-effect p-6 rounded-xl text-center cursor-pointer hover:scale-105 transition-all duration-300 neon-border">
+                            <div class="text-6xl mb-4">⚽</div>
+                            <h3 class="text-lg font-semibold">Football</h3>
+                        </div>
+                        <div onclick="selectSport('badminton')" class="sport-card glass-effect p-6 rounded-xl text-center cursor-pointer hover:scale-105 transition-all duration-300 neon-border">
+                            <div class="text-6xl mb-4">🏸</div>
+                            <h3 class="text-lg font-semibold">Badminton</h3>
+                        </div>
+                        <div onclick="selectSport('pickleball')" class="sport-card glass-effect p-6 rounded-xl text-center cursor-pointer hover:scale-105 transition-all duration-300 neon-border">
+                            <div class="text-6xl mb-4">🎾</div>
+                            <h3 class="text-lg font-semibold">Pickleball</h3>
+                        </div>
+                        <div onclick="selectSport('snooker')" class="sport-card glass-effect p-6 rounded-xl text-center cursor-pointer hover:scale-105 transition-all duration-300 neon-border">
+                            <div class="text-6xl mb-4">🎱</div>
+                            <h3 class="text-lg font-semibold">Snooker</h3>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- SPORTS SELECTION PAGE -->
+        <div id="sports-page" class="page hidden">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+                <div class="text-center mb-12">
+                    <h1 class="text-4xl md:text-5xl font-bold mb-4 neon-text">Select Your Sport</h1>
+                    <p class="text-gray-300 text-lg">Choose from our premium sports facilities</p>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <div onclick="selectSport('cricket')" class="sport-card glass-effect rounded-xl overflow-hidden cursor-pointer hover:scale-105 transition-all duration-300 neon-border">
+                        <!-- Cricket field aerial view -->
+                        <img src="https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600" alt="Cricket field aerial view" class="w-full h-48 object-cover">
+                        <div class="p-6">
+                            <div class="flex items-center mb-4">
+                                <div class="text-4xl mr-4">🏏</div>
+                                <h3 class="text-2xl font-bold">Cricket</h3>
+                            </div>
+                            <p class="text-gray-300 mb-4">Professional cricket grounds with premium facilities</p>
+                            <div class="text-neon-orange font-semibold">15 Turfs Available</div>
+                        </div>
+                    </div>
+
+                    <div onclick="selectSport('football')" class="sport-card glass-effect rounded-xl overflow-hidden cursor-pointer hover:scale-105 transition-all duration-300 neon-border">
+                        <!-- Football field with goal posts -->
+                        <img src="https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600" alt="Football field with goal posts" class="w-full h-48 object-cover">
+                        <div class="p-6">
+                            <div class="flex items-center mb-4">
+                                <div class="text-4xl mr-4">⚽</div>
+                                <h3 class="text-2xl font-bold">Football</h3>
+                            </div>
+                            <p class="text-gray-300 mb-4">FIFA standard football pitches for the perfect game</p>
+                            <div class="text-neon-orange font-semibold">12 Turfs Available</div>
+                        </div>
+                    </div>
+
+                    <div onclick="selectSport('badminton')" class="sport-card glass-effect rounded-xl overflow-hidden cursor-pointer hover:scale-105 transition-all duration-300 neon-border">
+                        <!-- Badminton court interior -->
+                        <img src="https://pixabay.com/get/g38c4336d0f5ebef92dd157804518fc710ad0a4b7f985e9501c6380dd2af124becb17d3940f711a3918665a35aa694896d452802cfe7fb2f2bb427bbf9e7ed54a_1280.jpg" alt="Badminton court interior" class="w-full h-48 object-cover">
+                        <div class="p-6">
+                            <div class="flex items-center mb-4">
+                                <div class="text-4xl mr-4">🏸</div>
+                                <h3 class="text-2xl font-bold">Badminton</h3>
+                            </div>
+                            <p class="text-gray-300 mb-4">Air-conditioned courts with professional lighting</p>
+                            <div class="text-neon-orange font-semibold">20 Courts Available</div>
+                        </div>
+                    </div>
+
+                    <div onclick="selectSport('pickleball')" class="sport-card glass-effect rounded-xl overflow-hidden cursor-pointer hover:scale-105 transition-all duration-300 neon-border">
+                        <!-- Tennis court which is similar to pickleball -->
+                        <img src="https://images.unsplash.com/photo-1554068865-24cecd4e34b8?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600" alt="Tennis court for pickleball" class="w-full h-48 object-cover">
+                        <div class="p-6">
+                            <div class="flex items-center mb-4">
+                                <div class="text-4xl mr-4">🎾</div>
+                                <h3 class="text-2xl font-bold">Pickleball</h3>
+                            </div>
+                            <p class="text-gray-300 mb-4">Modern pickleball courts with quality equipment</p>
+                            <div class="text-neon-orange font-semibold">8 Courts Available</div>
+                        </div>
+                    </div>
+
+                    <div onclick="selectSport('snooker')" class="sport-card glass-effect rounded-xl overflow-hidden cursor-pointer hover:scale-105 transition-all duration-300 neon-border">
+                        <!-- Snooker table in elegant room -->
+                        <img src="https://images.unsplash.com/photo-1578662996442-48f60103fc96?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600" alt="Snooker table in elegant room" class="w-full h-48 object-cover">
+                        <div class="p-6">
+                            <div class="flex items-center mb-4">
+                                <div class="text-4xl mr-4">🎱</div>
+                                <h3 class="text-2xl font-bold">Snooker</h3>
+                            </div>
+                            <p class="text-gray-300 mb-4">Professional snooker tables in premium lounges</p>
+                            <div class="text-neon-orange font-semibold">10 Tables Available</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TURF SELECTION PAGE -->
+        <div id="turf-page" class="page hidden">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+                <div class="mb-8">
+                    <button onclick="showPage('sports')" class="text-neon-orange hover:text-orange-400 flex items-center mb-4">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                        </svg>
+                        Back to Sports
+                    </button>
+                    <h1 id="turf-page-title" class="text-4xl md:text-5xl font-bold mb-4 neon-text">Cricket Turfs</h1>
+                    <p class="text-gray-300 text-lg">Choose from our premium cricket facilities</p>
+                </div>
+
+                <div id="turf-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <!-- Turfs will be populated dynamically -->
+                </div>
+            </div>
+        </div>
+
+        <!-- SLOT BOOKING PAGE -->
+        <div id="slot-page" class="page hidden">
+            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+                <div class="mb-8">
+                    <button onclick="showPage('turf')" class="text-neon-orange hover:text-orange-400 flex items-center mb-4">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                        </svg>
+                        Back to Turfs
+                    </button>
+                    <h1 id="slot-page-title" class="text-4xl font-bold mb-4 neon-text">Select Time Slot</h1>
+                    <div id="selected-turf-info" class="glass-effect p-6 rounded-xl neon-border mb-8">
+                        <!-- Turf info will be populated dynamically -->
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                    <div onclick="selectSlot('6-8 AM')" class="slot-card glass-effect p-4 rounded-lg text-center cursor-pointer hover:bg-neon-orange hover:text-black transition-all duration-300 neon-border">
+                        <div class="font-semibold">6:00 - 8:00 AM</div>
+                        <div class="text-sm text-green-400">Available</div>
+                    </div>
+                    <div onclick="selectSlot('8-10 AM')" class="slot-card glass-effect p-4 rounded-lg text-center cursor-pointer hover:bg-neon-orange hover:text-black transition-all duration-300 neon-border">
+                        <div class="font-semibold">8:00 - 10:00 AM</div>
+                        <div class="text-sm text-green-400">Available</div>
+                    </div>
+                    <div class="slot-card glass-effect p-4 rounded-lg text-center opacity-50 cursor-not-allowed border-gray-600">
+                        <div class="font-semibold">10:00 - 12:00 PM</div>
+                        <div class="text-sm text-red-400">Booked</div>
+                    </div>
+                    <div onclick="selectSlot('12-2 PM')" class="slot-card glass-effect p-4 rounded-lg text-center cursor-pointer hover:bg-neon-orange hover:text-black transition-all duration-300 neon-border">
+                        <div class="font-semibold">12:00 - 2:00 PM</div>
+                        <div class="text-sm text-green-400">Available</div>
+                    </div>
+                    <div onclick="selectSlot('2-4 PM')" class="slot-card glass-effect p-4 rounded-lg text-center cursor-pointer hover:bg-neon-orange hover:text-black transition-all duration-300 neon-border">
+                        <div class="font-semibold">2:00 - 4:00 PM</div>
+                        <div class="text-sm text-green-400">Available</div>
+                    </div>
+                    <div onclick="selectSlot('4-6 PM')" class="slot-card glass-effect p-4 rounded-lg text-center cursor-pointer hover:bg-neon-orange hover:text-black transition-all duration-300 neon-border">
+                        <div class="font-semibold">4:00 - 6:00 PM</div>
+                        <div class="text-sm text-green-400">Available</div>
+                    </div>
+                    <div onclick="selectSlot('6-8 PM')" class="slot-card glass-effect p-4 rounded-lg text-center cursor-pointer hover:bg-neon-orange hover:text-black transition-all duration-300 neon-border">
+                        <div class="font-semibold">6:00 - 8:00 PM</div>
+                        <div class="text-sm text-green-400">Available</div>
+                    </div>
+                    <div onclick="selectSlot('8-10 PM')" class="slot-card glass-effect p-4 rounded-lg text-center cursor-pointer hover:bg-neon-orange hover:text-black transition-all duration-300 neon-border">
+                        <div class="font-semibold">8:00 - 10:00 PM</div>
+                        <div class="text-sm text-green-400">Available</div>
+                    </div>
+                </div>
+
+                <div id="booking-confirmation" class="hidden glass-effect p-6 rounded-xl neon-border">
+                    <h3 class="text-2xl font-bold mb-4 neon-text">Confirm Your Booking</h3>
+                    <div id="booking-details" class="mb-6">
+                        <!-- Booking details will be populated dynamically -->
+                    </div>
+                    <button onclick="confirmBooking()" class="bg-neon-orange hover:bg-orange-600 text-black font-bold py-3 px-6 rounded-lg transition-all duration-300 animate-glow">
+                        Confirm & Book
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- REGISTRATION PAGE -->
+        <div id="register-page" class="page hidden">
+            <div class="max-w-md mx-auto px-4 sm:px-6 lg:px-8 py-20">
+                <div class="glass-effect p-8 rounded-xl neon-border">
+                    <h1 class="text-3xl font-bold text-center mb-8 neon-text">Register</h1>
+                    <form id="registration-form" onsubmit="handleRegistration(event)">
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium mb-2">Name</label>
+                            <input type="text" id="reg-name" required class="w-full p-3 rounded-lg bg-black/50 border border-neon-orange/30 focus:border-neon-orange focus:outline-none focus:ring-2 focus:ring-neon-orange/50 transition-all">
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium mb-2">Age</label>
+                            <input type="number" id="reg-age" required class="w-full p-3 rounded-lg bg-black/50 border border-neon-orange/30 focus:border-neon-orange focus:outline-none focus:ring-2 focus:ring-neon-orange/50 transition-all">
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium mb-2">Gender</label>
+                            <select id="reg-gender" required class="w-full p-3 rounded-lg bg-black/50 border border-neon-orange/30 focus:border-neon-orange focus:outline-none focus:ring-2 focus:ring-neon-orange/50 transition-all">
+                                <option value="">Select Gender</option>
+                                <option value="male">Male</option>
+                                <option value="female">Female</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium mb-2">Email</label>
+                            <input type="email" id="reg-email" required class="w-full p-3 rounded-lg bg-black/50 border border-neon-orange/30 focus:border-neon-orange focus:outline-none focus:ring-2 focus:ring-neon-orange/50 transition-all">
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium mb-2">Mobile Number</label>
+                            <input type="tel" id="reg-mobile" required class="w-full p-3 rounded-lg bg-black/50 border border-neon-orange/30 focus:border-neon-orange focus:outline-none focus:ring-2 focus:ring-neon-orange/50 transition-all">
+                        </div>
+                        <div class="mb-6">
+                            <label class="block text-sm font-medium mb-2">Password</label>
+                            <input type="password" id="reg-password" required class="w-full p-3 rounded-lg bg-black/50 border border-neon-orange/30 focus:border-neon-orange focus:outline-none focus:ring-2 focus:ring-neon-orange/50 transition-all">
+                        </div>
+                        <button type="submit" class="w-full bg-neon-orange hover:bg-orange-600 text-black font-bold py-3 px-6 rounded-lg transition-all duration-300 animate-glow">
+                            Register
+                        </button>
+                    </form>
+                    <p class="text-center mt-4 text-gray-300">
+                        Already have an account? 
+                        <a href="#" onclick="showPage('login')" class="text-neon-orange hover:text-orange-400">Login here</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- LOGIN PAGE -->
+        <div id="login-page" class="page hidden">
+            <div class="max-w-md mx-auto px-4 sm:px-6 lg:px-8 py-20">
+                <div class="glass-effect p-8 rounded-xl neon-border">
+                    <h1 class="text-3xl font-bold text-center mb-8 neon-text">Login</h1>
+                    <form id="login-form" onsubmit="handleLogin(event)">
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium mb-2">Email</label>
+                            <input type="email" id="login-email" required class="w-full p-3 rounded-lg bg-black/50 border border-neon-orange/30 focus:border-neon-orange focus:outline-none focus:ring-2 focus:ring-neon-orange/50 transition-all">
+                        </div>
+                        <div class="mb-6">
+                            <label class="block text-sm font-medium mb-2">Password</label>
+                            <input type="password" id="login-password" required class="w-full p-3 rounded-lg bg-black/50 border border-neon-orange/30 focus:border-neon-orange focus:outline-none focus:ring-2 focus:ring-neon-orange/50 transition-all">
+                        </div>
+                        <button type="submit" class="w-full bg-neon-orange hover:bg-orange-600 text-black font-bold py-3 px-6 rounded-lg transition-all duration-300 animate-glow">
+                            Login
+                        </button>
+                    </form>
+                    <p class="text-center mt-4 text-gray-300">
+                        Don't have an account? 
+                        <a href="#" onclick="showPage('register')" class="text-neon-orange hover:text-orange-400">Register here</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- MY BOOKINGS PAGE -->
+        <div id="my-bookings-page" class="page hidden">
+            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+                <h1 class="text-4xl font-bold mb-8 neon-text">My Bookings</h1>
+                <div id="bookings-list" class="space-y-6">
+                    <!-- Bookings will be populated dynamically -->
+                </div>
+                <div id="no-bookings" class="text-center py-20 hidden">
+                    <div class="text-6xl mb-4">📅</div>
+                    <h3 class="text-2xl font-bold mb-4">No Bookings Found</h3>
+                    <p class="text-gray-300 mb-6">You haven't made any bookings yet.</p>
+                    <button onclick="showPage('sports')" class="bg-neon-orange hover:bg-orange-600 text-black font-bold py-3 px-6 rounded-lg transition-all duration-300">
+                        Book Now
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Global variables
+        let currentUser = null;
+        let selectedSport = null;
+        let selectedTurf = null;
+        let selectedSlot = null;
+
+        // Sample data
+        const sportsData = {
+            cricket: [
+                {
+                    id: 1,
+                    name: "Champions Cricket Ground",
+                    address: "Sector 15, Gurgaon",
+                    rating: 4.8,
+                    image: "https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
+                    price: 2000
+                },
+                {
+                    id: 2,
+                    name: "Elite Sports Arena",
+                    address: "MG Road, Bangalore",
+                    rating: 4.6,
+                    image: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
+                    price: 1800
+                },
+                {
+                    id: 3,
+                    name: "Premium Cricket Club",
+                    address: "Andheri West, Mumbai",
+                    rating: 4.9,
+                    image: "https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
+                    price: 2500
+                }
+            ],
+            football: [
+                {
+                    id: 4,
+                    name: "City Football Complex",
+                    address: "Salt Lake, Kolkata",
+                    rating: 4.7,
+                    image: "https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
+                    price: 1500
+                },
+                {
+                    id: 5,
+                    name: "Metro Football Ground",
+                    address: "Connaught Place, Delhi",
+                    rating: 4.5,
+                    image: "https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
+                    price: 1600
+                }
+            ],
+            badminton: [
+                {
+                    id: 6,
+                    name: "Ace Badminton Center",
+                    address: "Koramangala, Bangalore",
+                    rating: 4.8,
+                    image: "https://images.unsplash.com/photo-1544737151-6e4b01da9d4a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
+                    price: 800
+                }
+            ],
+            pickleball: [
+                {
+                    id: 7,
+                    name: "Modern Pickleball Courts",
+                    address: "Bandra, Mumbai",
+                    rating: 4.6,
+                    image: "https://images.unsplash.com/photo-1554068865-24cecd4e34b8?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
+                    price: 1000
+                }
+            ],
+            snooker: [
+                {
+                    id: 8,
+                    name: "Royal Snooker Lounge",
+                    address: "Golf Course Road, Gurgaon",
+                    rating: 4.9,
+                    image: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
+                    price: 600
+                }
+            ]
+        };
+
+        // Initialize the app
+        (function() {
+            // Check if user is logged in
+            const savedUser = localStorage.getItem('currentUser');
+            if (savedUser) {
+                currentUser = JSON.parse(savedUser);
+                updateNavigation();
+            }
+
+            // Initialize 3D cricket animation
+            init3DCricket();
+            
+            // Show default page
+            showPage('home');
+        })();
+
+        // 3D Cricket Animation
+        function init3DCricket() {
+            const canvas = document.getElementById('cricket-canvas');
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+
+            // Create cricket ball
+            const ballGeometry = new THREE.SphereGeometry(0.1, 32, 32);
+            const ballMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+            const ball = new THREE.Mesh(ballGeometry, ballMaterial);
+            scene.add(ball);
+
+            // Position camera
+            camera.position.z = 5;
+            ball.position.set(-2, 1, 0);
+
+            // Animation
+            function animate() {
+                requestAnimationFrame(animate);
+                
+                // Animate ball movement
+                ball.rotation.x += 0.01;
+                ball.rotation.y += 0.01;
+                ball.position.x += 0.02;
+                
+                if (ball.position.x > 3) {
+                    ball.position.x = -3;
+                }
+
+                renderer.render(scene, camera);
+            }
+            
+            animate();
+
+            // Handle window resize
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+        }
+
+        // Navigation functions
+        function showPage(pageId) {
+            const pages = document.querySelectorAll('.page');
+            pages.forEach(page => page.classList.add('hidden'));
+            
+            const targetPage = document.getElementById(pageId + '-page');
+            if (targetPage) {
+                targetPage.classList.remove('hidden');
+                targetPage.classList.add('animate-slideIn');
+            }
+
+            // Close mobile menu
+            document.getElementById('mobile-menu').classList.add('hidden');
+
+            // Update navigation highlights
+            updateNavHighlight(pageId);
+        }
+
+        function updateNavHighlight(activePageId) {
+            const navLinks = document.querySelectorAll('.nav-link');
+            navLinks.forEach(link => {
+                link.classList.remove('text-neon-orange');
+                link.classList.add('text-white');
+            });
+
+            // Highlight active nav item based on page
+            const pageNavMap = {
+                'home': 0,
+                'sports': 1,
+                'turf': 1,
+                'slot': 1,
+                'my-bookings': 2,
+                'register': 3,
+                'login': 4
+            };
+
+            const activeIndex = pageNavMap[activePageId];
+            if (activeIndex !== undefined && navLinks[activeIndex]) {
+                navLinks[activeIndex].classList.remove('text-white');
+                navLinks[activeIndex].classList.add('text-neon-orange');
+            }
+        }
+
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+        }
+
+        function updateNavigation() {
+            // Update navigation based on login status
+            if (currentUser) {
+                console.log('User logged in:', currentUser.name);
+            }
+        }
+
+        // Sport selection
+        function selectSport(sport) {
+            selectedSport = sport;
+            showTurfs(sport);
+            showPage('turf');
+        }
+
+        function showTurfs(sport) {
+            const turfList = document.getElementById('turf-list');
+            const turfPageTitle = document.getElementById('turf-page-title');
+            
+            turfPageTitle.textContent = `${sport.charAt(0).toUpperCase() + sport.slice(1)} Turfs`;
+            
+            const turfs = sportsData[sport] || [];
+            
+            turfList.innerHTML = turfs.map(turf => `
+                <div onclick="selectTurf(${turf.id})" class="turf-card glass-effect rounded-xl overflow-hidden cursor-pointer hover:scale-105 transition-all duration-300 neon-border">
+                    <img src="${turf.image}" alt="${turf.name}" class="w-full h-48 object-cover">
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold mb-2">${turf.name}</h3>
+                        <p class="text-gray-300 mb-2">${turf.address}</p>
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center">
+                                <span class="text-yellow-400">★</span>
+                                <span class="ml-1">${turf.rating}</span>
+                            </div>
+                            <div class="text-neon-orange font-bold">₹${turf.price}/2hrs</div>
+                        </div>
+                        <button class="w-full bg-neon-orange hover:bg-orange-600 text-black font-bold py-2 px-4 rounded-lg transition-all duration-300">
+                            View Slots
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function selectTurf(turfId) {
+            const allTurfs = Object.values(sportsData).flat();
+            selectedTurf = allTurfs.find(turf => turf.id === turfId);
+            
+            if (selectedTurf) {
+                showSlots();
+                showPage('slot');
+            }
+        }
+
+        function showSlots() {
+            const slotPageTitle = document.getElementById('slot-page-title');
+            const selectedTurfInfo = document.getElementById('selected-turf-info');
+            
+            slotPageTitle.textContent = `Select Time Slot - ${selectedTurf.name}`;
+            
+            selectedTurfInfo.innerHTML = `
+                <div class="flex items-center space-x-4">
+                    <img src="${selectedTurf.image}" alt="${selectedTurf.name}" class="w-20 h-20 rounded-lg object-cover">
+                    <div>
+                        <h3 class="text-xl font-bold">${selectedTurf.name}</h3>
+                        <p class="text-gray-300">${selectedTurf.address}</p>
+                        <div class="flex items-center mt-2">
+                            <span class="text-yellow-400">★</span>
+                            <span class="ml-1 mr-4">${selectedTurf.rating}</span>
+                            <span class="text-neon-orange font-bold">₹${selectedTurf.price}/2hrs</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function selectSlot(slot) {
+            selectedSlot = slot;
+            
+            // Remove selection from other slots
+            const slotCards = document.querySelectorAll('.slot-card');
+            slotCards.forEach(card => {
+                card.classList.remove('bg-neon-orange', 'text-black');
+                card.classList.add('text-white');
+            });
+            
+            // Highlight selected slot
+            event.target.classList.add('bg-neon-orange', 'text-black');
+            event.target.classList.remove('text-white');
+            
+            // Show booking confirmation
+            showBookingConfirmation();
+        }
+
+        function showBookingConfirmation() {
+            const bookingConfirmation = document.getElementById('booking-confirmation');
+            const bookingDetails = document.getElementById('booking-details');
+            
+            const currentDate = new Date().toLocaleDateString();
+            
+            bookingDetails.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <h4 class="font-semibold text-neon-orange">Turf Details</h4>
+                        <p>${selectedTurf.name}</p>
+                        <p class="text-gray-300">${selectedTurf.address}</p>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-neon-orange">Booking Details</h4>
+                        <p>Date: ${currentDate}</p>
+                        <p>Time: ${selectedSlot}</p>
+                        <p class="font-bold">Total: ₹${selectedTurf.price}</p>
+                    </div>
+                </div>
+            `;
+            
+            bookingConfirmation.classList.remove('hidden');
+        }
+
+        function confirmBooking() {
+            if (!currentUser) {
+                alert('Please login to confirm booking');
+                showPage('login');
+                return;
+            }
+            
+            // Create booking object
+            const booking = {
+                id: Date.now(),
+                userId: currentUser.email,
+                turf: selectedTurf,
+                sport: selectedSport,
+                slot: selectedSlot,
+                date: new Date().toLocaleDateString(),
+                status: 'confirmed',
+                timestamp: new Date().toISOString()
+            };
+            
+            // Save booking to localStorage
+            let bookings = JSON.parse(localStorage.getItem('bookings')) || [];
+            bookings.push(booking);
+            localStorage.setItem('bookings', JSON.stringify(bookings));
+            
+            alert('Booking confirmed successfully!');
+            showPage('my-bookings');
+            loadMyBookings();
+        }
+
+        // Registration and Login
+        function handleRegistration(event) {
+            event.preventDefault();
+            
+            const formData = {
+                name: document.getElementById('reg-name').value,
+                age: document.getElementById('reg-age').value,
+                gender: document.getElementById('reg-gender').value,
+                email: document.getElementById('reg-email').value,
+                mobile: document.getElementById('reg-mobile').value,
+                password: document.getElementById('reg-password').value
+            };
+            
+            // Save user to localStorage
+            let users = JSON.parse(localStorage.getItem('users')) || [];
+            
+            // Check if user already exists
+            if (users.find(user => user.email === formData.email)) {
+                alert('User with this email already exists!');
+                return;
+            }
+            
+            users.push(formData);
+            localStorage.setItem('users', JSON.stringify(users));
+            
+            alert('Registration successful! Please login.');
+            showPage('login');
+        }
+
+        function handleLogin(event) {
+            event.preventDefault();
+            
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            
+            const users = JSON.parse(localStorage.getItem('users')) || [];
+            const user = users.find(u => u.email === email && u.password === password);
+            
+            if (user) {
+                currentUser = user;
+                localStorage.setItem('currentUser', JSON.stringify(user));
+                updateNavigation();
+                alert('Login successful!');
+                showPage('sports');
+            } else {
+                alert('Invalid email or password!');
+            }
+        }
+
+        function loadMyBookings() {
+            if (!currentUser) {
+                showPage('login');
+                return;
+            }
+            
+            const bookingsList = document.getElementById('bookings-list');
+            const noBookings = document.getElementById('no-bookings');
+            
+            const allBookings = JSON.parse(localStorage.getItem('bookings')) || [];
+            const userBookings = allBookings.filter(booking => booking.userId === currentUser.email);
+            
+            if (userBookings.length === 0) {
+                bookingsList.innerHTML = '';
+                noBookings.classList.remove('hidden');
+                return;
+            }
+            
+            noBookings.classList.add('hidden');
+            bookingsList.innerHTML = userBookings.map(booking => `
+                <div class="glass-effect p-6 rounded-xl neon-border">
+                    <div class="flex justify-between items-start">
+                        <div class="flex-1">
+                            <h3 class="text-xl font-bold mb-2">${booking.turf.name}</h3>
+                            <p class="text-gray-300 mb-1">${booking.turf.address}</p>
+                            <div class="flex items-center space-x-4 mb-2">
+                                <span class="text-neon-orange font-semibold">${booking.sport.toUpperCase()}</span>
+                                <span>${booking.date}</span>
+                                <span>${booking.slot}</span>
+                            </div>
+                            <p class="font-bold">Total: ₹${booking.turf.price}</p>
+                        </div>
+                        <div class="text-right">
+                            <span class="inline-block px-3 py-1 rounded-full text-sm font-semibold ${booking.status === 'confirmed' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'}">
+                                ${booking.status.toUpperCase()}
+                            </span>
+                            ${booking.status === 'confirmed' ? `
+                                <button onclick="cancelBooking(${booking.id})" class="block mt-2 text-red-400 hover:text-red-300 text-sm">
+                                    Cancel Booking
+                                </button>
+                            ` : ''}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function cancelBooking(bookingId) {
+            if (confirm('Are you sure you want to cancel this booking?')) {
+                let bookings = JSON.parse(localStorage.getItem('bookings')) || [];
+                bookings = bookings.map(booking => {
+                    if (booking.id === bookingId) {
+                        booking.status = 'cancelled';
+                    }
+                    return booking;
+                });
+                localStorage.setItem('bookings', JSON.stringify(bookings));
+                loadMyBookings();
+            }
+        }
+
+        // Load bookings when navigating to my-bookings page
+        document.addEventListener('DOMContentLoaded', function() {
+            const observer = new MutationObserver(function(mutations) {
+                mutations.forEach(function(mutation) {
+                    if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+                        const myBookingsPage = document.getElementById('my-bookings-page');
+                        if (myBookingsPage && !myBookingsPage.classList.contains('hidden')) {
+                            loadMyBookings();
+                        }
+                    }
+                });
+            });
+            
+            observer.observe(document.getElementById('my-bookings-page'), { attributes: true });
+        });
+    </script>
+</body>
+</html>
