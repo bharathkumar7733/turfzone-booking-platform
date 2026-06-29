@@ -41,8 +41,8 @@ TurfZone is a feature-rich, full-stack sports facility booking web application. 
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/bharathkumar7733/fsd-.git
-   cd fsd-
+   git clone https://github.com/bharathkumar7733/turfzone-booking-platform.git
+   cd turfzone-booking-platform
    ```
 
 2. **Install node packages**:
